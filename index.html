@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>DATA RECOVERY NODE</title>
+<title>DATA NODE</title>
 
 <style>
 body {
@@ -12,13 +12,7 @@ body {
     overflow: hidden;
 }
 
-/* CENTER LAYOUT */
-#container {
-    text-align: center;
-    padding-top: 60px;
-}
-
-/* CRT OVERLAY */
+/* CRT */
 .crt::before {
     content: "";
     position: fixed;
@@ -38,93 +32,113 @@ body {
     content: "";
     position: fixed;
     inset: 0;
-    background: radial-gradient(
-        circle,
-        transparent 55%,
-        rgba(0,0,0,.6) 100%
-    );
+    background: radial-gradient(circle, transparent 55%, rgba(0,0,0,.7) 100%);
     pointer-events: none;
 }
 
 /* BOOT SCREEN */
 #boot {
-    display: none;
     position: fixed;
     inset: 0;
     background: black;
-    color: cyan;
+    display: none;
     text-align: center;
     padding-top: 120px;
 }
 
-#bootText {
-    font-size: 18px;
-    letter-spacing: 3px;
-    text-shadow: 0 0 10px cyan;
-}
-
-/* SCAN BAR */
-#scanBar {
-    width: 60%;
-    height: 6px;
-    margin: 40px auto;
-    border: 1px solid cyan;
-    position: relative;
-    overflow: hidden;
-}
-
-#scanFill {
-    width: 0%;
-    height: 100%;
-    background: cyan;
-    animation: scan 4s linear forwards;
-}
-
-@keyframes scan {
-    from { width: 0%; }
-    to { width: 100%; }
-}
-
-/* PUZZLE */
-#puzzle {
+/* MAIN UI */
+#app {
     display: none;
-    margin-top: 40px;
+    padding: 40px;
+    text-align: center;
 }
 
-input, button {
-    margin-top: 10px;
+button {
+    margin: 10px;
+    padding: 12px 18px;
+    background: black;
+    color: cyan;
+    border: 1px solid cyan;
+    cursor: pointer;
+    font-family: monospace;
+}
+
+/* PANELS */
+.panel {
+    display: none;
+    margin-top: 30px;
+}
+
+/* pH GRID */
+.phGrid {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.phGrid input {
+    width: 140px;
     padding: 10px;
     background: black;
     color: cyan;
     border: 1px solid cyan;
-    font-family: monospace;
+    text-align: center;
+}
+
+/* RESULT */
+#result {
+    margin-top: 15px;
 }
 </style>
 </head>
 
 <body class="crt">
 
-<div id="container">
-
-    <h1>BIODATA UPLOAD NODE</h1>
-
-    <p>Upload recovered image file</p>
-
+<!-- UPLOAD -->
+<div id="uploadScreen" style="text-align:center; padding-top:60px;">
+    <h2>UPLOAD RECOVERED FILE</h2>
     <input type="file" id="fileInput">
+    <p id="status">AWAITING INPUT...</p>
+</div>
 
-    <div id="status">AWAITING INPUT...</div>
+<!-- BOOT -->
+<div id="boot">
+    <h2 id="bootText">INITIALIZING...</h2>
+</div>
 
-    <div id="puzzle">
+<!-- MAIN APP -->
+<div id="app">
 
-        <h2>ACCESS GRANTED</h2>
+    <h1>DATA NODE ACCESS GRANTED</h1>
 
-        <audio id="log" controls>
+    <!-- MENU -->
+    <div>
+        <button onclick="showPanel('audio')">AUDIO LOG</button>
+        <button onclick="showPanel('ph')">pH ANALYSIS</button>
+    </div>
+
+    <!-- AUDIO -->
+    <div id="audioPanel" class="panel">
+        <h2>AUDIO LOG</h2>
+        <audio controls>
             <source src="audio-log.mp3">
         </audio>
+    </div>
 
-        <h3>pH INPUT</h3>
+    <!-- pH -->
+    <div id="phPanel" class="panel">
 
-        <input id="phInput" placeholder="Enter pH value">
+        <h2>CHEMICAL STABILITY ANALYSIS</h2>
+
+        <p>Select 1 Acid, 1 Base, 1 Stabilizer</p>
+
+        <div class="phGrid">
+            <input id="acid" placeholder="ACID">
+            <input id="base" placeholder="BASE">
+            <input id="stabilizer" placeholder="STABILIZER">
+        </div>
+
         <button onclick="checkPH()">SUBMIT</button>
 
         <p id="result"></p>
@@ -132,73 +146,82 @@ input, button {
 
 </div>
 
-<!-- BOOT SCREEN -->
-<div id="boot">
-    <div id="bootText">INITIALIZING DATA EXTRACTION...</div>
-
-    <div id="scanBar">
-        <div id="scanFill"></div>
-    </div>
-</div>
-
 <script>
 
 const fileInput = document.getElementById("fileInput");
 const status = document.getElementById("status");
-const puzzle = document.getElementById("puzzle");
 
 const boot = document.getElementById("boot");
 const bootText = document.getElementById("bootText");
 
+const app = document.getElementById("app");
+
 fileInput.addEventListener("change", () => {
 
-    const file = fileInput.files[0];
-    if (!file) return;
+    if (!fileInput.files[0]) return;
 
-    // START BOOT SEQUENCE
     status.innerText = "DATA RECEIVED";
 
     boot.style.display = "block";
 
-    let messages = [
+    let msgs = [
         "INITIALIZING EXTRACTION...",
-        "DECRYPTING BIOLOGICAL DATA...",
-        "RECONSTRUCTING SIGNAL...",
-        "STABILIZING OUTPUT..."
+        "DECRYPTING SIGNAL...",
+        "REBUILDING DATA STRUCTURE...",
+        "FINALIZING..."
     ];
 
     let i = 0;
 
     let interval = setInterval(() => {
 
-        if (i < messages.length) {
-            bootText.innerText = messages[i];
+        if (i < msgs.length) {
+            bootText.innerText = msgs[i];
             i++;
         } else {
             clearInterval(interval);
 
-            bootText.innerText = "EXTRACTION COMPLETE";
+            bootText.innerText = "ACCESS GRANTED";
 
             setTimeout(() => {
                 boot.style.display = "none";
-                puzzle.style.display = "block";
+                app.style.display = "block";
             }, 1200);
         }
 
     }, 1200);
 });
 
-/* pH CHECK */
+/* MENU SWITCH */
+function showPanel(type) {
+
+    document.getElementById("audioPanel").style.display = "none";
+    document.getElementById("phPanel").style.display = "none";
+
+    document.getElementById(type + "Panel").style.display = "block";
+}
+
+/* pH LOGIC */
 function checkPH() {
 
-    const val = parseFloat(document.getElementById("phInput").value);
+    const acid = document.getElementById("acid").value.toLowerCase();
+    const base = document.getElementById("base").value.toLowerCase();
+    const stab = document.getElementById("stabilizer").value.toLowerCase();
 
-    if (val >= 5 && val <= 6) {
+    const validAcids = ["vinegar"];
+    const validBases = ["baking soda"];
+    const validStab = ["sugar", "water"];
+
+    if (
+        validAcids.includes(acid) &&
+        validBases.includes(base) &&
+        validStab.includes(stab)
+    ) {
         document.getElementById("result").innerText =
-            "STABILITY ACHIEVED";
+            "STABLE PH RANGE ACHIEVED (5–6)";
     } else {
         document.getElementById("result").innerText =
-            "IMBALANCE DETECTED";
+            "UNSTABLE COMBINATION";
     }
 }
 
