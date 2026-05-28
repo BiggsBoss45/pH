@@ -473,13 +473,24 @@ saveNotebook(log);
    WIN / SEQUENCE TRIGGERS
 ========================= */
 
+/* =========================
+   VACCINE TRIGGER SYSTEM
+========================= */
+
+const inTargetRange = (ph >= 5 && ph <= 6);
+
 if (inTargetRange) {
 
-    // potency based on closeness to 5.5 (best point)
+    // potency = how close to PERFECT 5.5
     const distance = Math.abs(ph - 5.5);
     const potency = Math.max(0, 100 - (distance * 80));
 
     triggerVaccineAnimation(potency);
+
+    // optional unlock flag
+    if (potency >= 90) {
+        localStorage.setItem("phSolved", "true");
+    }
 }
 
 </script>
