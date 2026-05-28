@@ -149,11 +149,12 @@ button {
     </div>
 
 </div>
-
 <script>
 
+let attempt = 0;
+
 /* =========================
-   UPLOAD → BOOT → APP
+   BOOT SYSTEM
 ========================= */
 
 const fileInput = document.getElementById("fileInput");
@@ -202,7 +203,7 @@ fileInput.addEventListener("change", () => {
 });
 
 /* =========================
-   MENU
+   MENU SYSTEM
 ========================= */
 
 function showPanel(type) {
@@ -211,7 +212,7 @@ function showPanel(type) {
 }
 
 /* =========================
-   LAB NOTEBOOK MEMORY
+   NOTEBOOK SYSTEM
 ========================= */
 
 function getNotebook() {
@@ -242,6 +243,54 @@ Status: ${e.status}
 }
 
 /* =========================
+   E. COLI SEQUENCE
+========================= */
+
+function runNeutralizationSequence(isEvolved) {
+
+    const result = document.getElementById("result");
+
+    result.innerHTML += `
+        <br><br><span style="color:cyan;">
+        INITIATING CELLULAR INJECTION SEQUENCE...
+        </span>
+    `;
+
+    setTimeout(() => {
+        result.innerHTML += `<br>CHEMICAL MIX ENTERING E.COLI STRUCTURE...`;
+    }, 1000);
+
+    setTimeout(() => {
+
+        if (isEvolved) {
+            result.innerHTML += `<br>EVOLVED STRAIN DETECTED — COUNTERMEASURE REQUIRED...`;
+        } else {
+            result.innerHTML += `<br>NORMAL STRAIN RESPONSE STABLE...`;
+        }
+
+    }, 2200);
+
+    setTimeout(() => {
+
+        if (isEvolved) {
+            result.innerHTML += `
+                <br><span style="color:lime;">
+                EVOLVED E.COLI ELIMINATED ✔
+                </span>
+            `;
+            localStorage.setItem("ecoliEliminated", "true");
+        } else {
+            result.innerHTML += `
+                <br><span style="color:orange;">
+                STANDARD STRAIN NEUTRALIZED
+                </span>
+            `;
+        }
+
+    }, 4000);
+}
+
+/* =========================
    pH SYSTEM
 ========================= */
 
@@ -254,129 +303,88 @@ function checkPH() {
     let ph = 7;
     let notes = [];
 
-    /* =========================
-       ACIDS (REAL WORLD MAPPED)
-    ========================== */
-
+    /* ACIDS */
     switch(acid) {
-
-        case "ACID-1":
-            ph -= 1.5;
-            notes.push("Citric Acid detected (weak organic acid)");
-            break;
-
-        case "ACID-2":
-            ph -= 2.8;
-            notes.push("Lime Juice detected (high citric concentration)");
-            break;
-
-        case "ACID-3":
-            ph -= 2.0;
-            notes.push("Vinegar detected (acetic acid solution)");
-            break;
+        case "ACID-1": ph -= 1.5; notes.push("Citric Acid"); break;
+        case "ACID-2": ph -= 2.8; notes.push("Lime Juice"); break;
+        case "ACID-3": ph -= 2.0; notes.push("Vinegar"); break;
     }
 
-    /* =========================
-       BASES (REAL WORLD MAPPED)
-    ========================== */
-
+    /* BASES */
     switch(base) {
-
-        case "BASE-1":
-            ph += 2.5;
-            notes.push("Baking Soda detected (sodium bicarbonate)");
-            break;
-
-        case "BASE-2":
-            ph += 0.3;
-            notes.push("Water detected (neutral dilution buffer)");
-            break;
-
-        case "BASE-3":
-            ph += 1.2;
-            notes.push("Rubbing Alcohol detected (volatile solvent disruption)");
-            break;
+        case "BASE-1": ph += 2.5; notes.push("Baking Soda"); break;
+        case "BASE-2": ph += 0.3; notes.push("Water"); break;
+        case "BASE-3": ph += 1.2; notes.push("Rubbing Alcohol"); break;
     }
 
-    /* =========================
-       STABILIZERS (REAL WORLD MAPPED)
-    ========================== */
-
+    /* STABILIZERS */
     switch(stab) {
-
-        case "STABILIZER-1":
-            ph = 7 + (ph - 7) * 0.70;
-            notes.push("Salt matrix stabilization active");
-            break;
-
-        case "STABILIZER-2":
-            ph = 7 + (ph - 7) * 0.45;
-            notes.push("Sugar polymer buffering active");
-            break;
-
-        case "STABILIZER-3":
-            ph = 7 + (ph - 7) * 0.60;
-            notes.push("Gelatin structural stabilization detected");
-            break;
+        case "STABILIZER-1": ph = 7 + (ph - 7) * 0.70; notes.push("Salt matrix"); break;
+        case "STABILIZER-2": ph = 7 + (ph - 7) * 0.45; notes.push("Sugar buffer"); break;
+        case "STABILIZER-3": ph = 7 + (ph - 7) * 0.60; notes.push("Gelatin structure"); break;
     }
 
-    /* clamp */
     ph = Math.max(0, Math.min(14, ph));
 
     attempt++;
 
-    let status = "";
+    /* EVOLVED STRAIN LOGIC */
+    const evolved = (ph < 4.5 || ph > 9.5);
 
-    if (ph >= 5 && ph <= 6) {
-        status = "TARGET RANGE ACHIEVED";
-    }
-    else if (ph < 5) {
+    const inTargetRange = (ph >= 5 && ph <= 6);
+    const success = inTargetRange && !evolved;
+
+    let status;
+
+    if (success) {
+        status = "TARGET STABILITY ACHIEVED";
+    } else if (inTargetRange && evolved) {
+        status = "TARGET RANGE BUT MUTATION SURVIVED";
+    } else if (ph < 5) {
         status = "TOO ACIDIC";
-    }
-    else {
+    } else {
         status = "TOO BASIC";
     }
 
-    /* DISPLAY */
     document.getElementById("result").innerHTML = `
-        ENTRY #${attempt}<br><br>
+ENTRY #${attempt}<br><br>
 
-        Acid: ${acid || "NONE"}<br>
-        Base: ${base || "NONE"}<br>
-        Stabilizer: ${stab || "NONE"}<br><br>
+Acid: ${acid || "NONE"}<br>
+Base: ${base || "NONE"}<br>
+Stabilizer: ${stab || "NONE"}<br><br>
 
-        Estimated pH: <b>${ph.toFixed(2)}</b><br>
-        Status: <b>${status}</b><br><br>
+Estimated pH: <b>${ph.toFixed(2)}</b><br>
+Status: <b>${status}</b><br><br>
 
-        ${notes.join("<br>")}
-    `;
+${notes.join("<br>")}
+`;
 
-    /* SAVE NOTEBOOK (SESSION ONLY FIX IS ALREADY GOOD) */
-    const log = JSON.parse(sessionStorage.getItem("labNotebook") || "[]");
+/* SAVE */
+const log = getNotebook();
+log.push({
+    attempt,
+    acid,
+    base,
+    stabilizer: stab,
+    ph: ph.toFixed(2),
+    status
+});
+saveNotebook(log);
 
-    log.push({
-        attempt,
-        acid,
-        base,
-        stabilizer: stab,
-        ph: ph.toFixed(2),
-        status
-    });
+/* =========================
+   WIN / SEQUENCE TRIGGERS
+========================= */
 
-    sessionStorage.setItem("labNotebook", JSON.stringify(log));
-
-    /* WIN CONDITION */
-    if (status === "TARGET RANGE ACHIEVED") {
-        localStorage.setItem("phSolved", "true");
-
-        document.getElementById("result").innerHTML += `
-            <br><br>
-            <span style="color:lime;">
-                BIOLOGICAL STABILITY ACHIEVED
-            </span>
-        `;
-    }
+if (success) {
+    localStorage.setItem("phSolved", "true");
+    runNeutralizationSequence(false);
 }
+
+else if (inTargetRange && evolved) {
+    runNeutralizationSequence(true);
+}
+}
+
 </script>
 
 </body>
