@@ -181,41 +181,57 @@ const uploadScreen = document.getElementById("uploadScreen");
 
 fileInput.addEventListener("change", () => {
 
-    if (!fileInput.files[0]) return;
+    const file = fileInput.files[0];
+    if (!file) return;
 
-    statusText.innerText = "DATA RECEIVED";
+    // only accept images
+    if (!file.type.startsWith("image/")) {
+        statusText.innerText = "INVALID FILE TYPE";
+        return;
+    }
+
+    statusText.innerText = "IMAGE RECEIVED";
 
     uploadScreen.style.display = "none";
     boot.style.display = "block";
 
-    const msgs = [
-        "INITIALIZING EXTRACTION...",
-        "DECRYPTING SIGNAL...",
-        "REBUILDING DATA STRUCTURE...",
-        "FINALIZING..."
-    ];
+    const reader = new FileReader();
 
-    let i = 0;
+    reader.onload = () => {
 
-    const interval = setInterval(() => {
+        // OPTIONAL: store image if you want later use
+        localStorage.setItem("uploadedImage", reader.result);
 
-        if (i < msgs.length) {
-            bootText.innerText = msgs[i];
-            i++;
-        } else {
-            clearInterval(interval);
+        const msgs = [
+            "SCANNING IMAGE STRUCTURE...",
+            "DETECTING BIOLOGICAL PATTERNS...",
+            "ANALYZING ANOMALIES...",
+            "FINALIZING DATA MODEL..."
+        ];
 
-            bootText.innerText = "ACCESS GRANTED";
+        let i = 0;
 
-            setTimeout(() => {
-                boot.style.display = "none";
-                app.style.display = "block";
-            }, 1000);
-        }
+        const interval = setInterval(() => {
 
-    }, 1200);
+            if (i < msgs.length) {
+                bootText.innerText = msgs[i];
+                i++;
+            } else {
+                clearInterval(interval);
+
+                bootText.innerText = "IMAGE ANALYSIS COMPLETE";
+
+                setTimeout(() => {
+                    boot.style.display = "none";
+                    app.style.display = "block";
+                }, 1000);
+            }
+
+        }, 1200);
+    };
+
+    reader.readAsDataURL(file);
 });
-
 /* =========================
    MENU SYSTEM
 ========================= */
