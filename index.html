@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>DATA RECOVERY NODE</title>
+<style>
+body {
+    background: black;
+    color: cyan;
+    font-family: monospace;
+    text-align: center;
+    padding: 40px;
+}
+
+#puzzle {
+    display: none;
+    margin-top: 30px;
+}
+
+button {
+    margin-top: 10px;
+    padding: 10px;
+    background: black;
+    color: cyan;
+    border: 1px solid cyan;
+}
+</style>
+</head>
+
+<body>
+
+<h1>UPLOAD RECOVERED IMAGE</h1>
+
+<input type="file" id="fileInput">
+
+<div id="puzzle">
+
+    <h2>ACCESS GRANTED</h2>
+
+    <audio controls>
+        <source src="audio-log.mp3" type="audio/mpeg">
+    </audio>
+
+    <h3>pH SYSTEM INPUT</h3>
+
+    <input id="phInput" placeholder="Enter pH value">
+    <button onclick="checkPH()">SUBMIT</button>
+
+    <p id="result"></p>
+
+</div>
+
+<script>
+
+document.getElementById("fileInput").addEventListener("change", function(e) {
+
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    // SIMPLE CHECK (you can upgrade later)
+    if (file.name.includes("image1")) {
+
+        document.getElementById("puzzle").style.display = "block";
+
+    } else {
+
+        alert("INVALID DATA FILE");
+    }
+
+});
+
+function checkPH() {
+
+    const val = parseFloat(document.getElementById("phInput").value);
+
+    if (val >= 5 && val <= 6) {
+        document.getElementById("result").innerText = "CORRECT. NEXT STAGE UNLOCKED";
+    } else {
+        document.getElementById("result").innerText = "INCORRECT COMBINATION";
+    }
+}
+
+</script>
+
+</body>
+</html>
