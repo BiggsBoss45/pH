@@ -304,6 +304,47 @@ function runNeutralizationSequence(isEvolved) {
     }, 4000);
 }
 
+function triggerVaccineAnimation(potency) {
+
+    const result = document.getElementById("result");
+
+    result.innerHTML += `
+        <br><br><span style="color:cyan;">
+        VACCINE DELIVERY INITIATED...
+        </span>
+    `;
+
+    // injection phase
+    setTimeout(() => {
+        result.innerHTML += `<br>INJECTING ANTIGEN VECTOR INTO E.COLI POPULATION...`;
+    }, 1200);
+
+    // diffusion phase
+    setTimeout(() => {
+        result.innerHTML += `<br>VACCINE DIFFUSION IN PROGRESS... POTENCY: ${potency.toFixed(1)}%`;
+    }, 2500);
+
+    // outcome phase
+    setTimeout(() => {
+
+        if (potency >= 75) {
+            result.innerHTML += `
+                <br><span style="color:lime;">
+                COMPLETE ERADICATION OF E.COLI STRAIN ✔
+                </span>
+            `;
+            localStorage.setItem("ecoliEliminated", "true");
+
+        } else {
+            result.innerHTML += `
+                <br><span style="color:orange;">
+                PARTIAL ELIMINATION — RESISTANT STRAINS REMAIN
+                </span>
+            `;
+        }
+
+    }, 4200);
+}
 /* =========================
    pH SYSTEM
 ========================= */
@@ -416,14 +457,13 @@ saveNotebook(log);
    WIN / SEQUENCE TRIGGERS
 ========================= */
 
-if (success) {
-    localStorage.setItem("phSolved", "true");
-    runNeutralizationSequence(false);
-}
+if (inTargetRange) {
 
-else if (inTargetRange && evolved) {
-    runNeutralizationSequence(true);
-}
+    // potency based on closeness to 5.5 (best point)
+    const distance = Math.abs(ph - 5.5);
+    const potency = Math.max(0, 100 - (distance * 80));
+
+    triggerVaccineAnimation(potency);
 }
 
 </script>
