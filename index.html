@@ -245,8 +245,6 @@ Status: ${e.status}
    pH SYSTEM
 ========================= */
 
-let attempt = 0;
-
 function checkPH() {
 
     const acid = document.getElementById("acid").value.toUpperCase().trim();
@@ -257,72 +255,72 @@ function checkPH() {
     let notes = [];
 
     /* =========================
-       ACIDS
+       ACIDS (REAL WORLD MAPPED)
     ========================== */
 
     switch(acid) {
 
         case "ACID-1":
-            ph -= 1.2;
-            notes.push("weak acidic reaction detected");
+            ph -= 1.5;
+            notes.push("Citric Acid detected (weak organic acid)");
             break;
 
         case "ACID-2":
-            ph -= 3.5;
-            notes.push("aggressive acidic destabilization");
+            ph -= 2.8;
+            notes.push("Lime Juice detected (high citric concentration)");
             break;
 
         case "ACID-3":
             ph -= 2.0;
-            notes.push("moderate acidic shift");
+            notes.push("Vinegar detected (acetic acid solution)");
             break;
     }
 
     /* =========================
-       BASES
+       BASES (REAL WORLD MAPPED)
     ========================== */
 
     switch(base) {
 
         case "BASE-1":
-            ph += 1.5;
-            notes.push("minor alkaline increase");
+            ph += 2.5;
+            notes.push("Baking Soda detected (sodium bicarbonate)");
             break;
 
         case "BASE-2":
-            ph += 4.0;
-            notes.push("extreme alkaline spike");
+            ph += 0.3;
+            notes.push("Water detected (neutral dilution buffer)");
             break;
 
         case "BASE-3":
-            ph += 2.5;
-            notes.push("controlled alkaline adjustment");
+            ph += 1.2;
+            notes.push("Rubbing Alcohol detected (volatile solvent disruption)");
             break;
     }
 
     /* =========================
-       STABILIZERS
+       STABILIZERS (REAL WORLD MAPPED)
     ========================== */
 
     switch(stab) {
 
         case "STABILIZER-1":
-            ph = 7 + (ph - 7) * 0.75;
-            notes.push("partial buffering active");
+            ph = 7 + (ph - 7) * 0.70;
+            notes.push("Salt matrix stabilization active");
             break;
 
         case "STABILIZER-2":
-            ph = 7 + (ph - 7) * 0.40;
-            notes.push("strong neutralization detected");
+            ph = 7 + (ph - 7) * 0.45;
+            notes.push("Sugar polymer buffering active");
             break;
 
         case "STABILIZER-3":
-            ph = 7 + (ph - 7) * 0.90;
-            notes.push("unstable compound suspension");
+            ph = 7 + (ph - 7) * 0.60;
+            notes.push("Gelatin structural stabilization detected");
             break;
     }
 
-    /* CLAMP */
+    /* clamp */
     ph = Math.max(0, Math.min(14, ph));
 
     attempt++;
@@ -340,7 +338,6 @@ function checkPH() {
     }
 
     /* DISPLAY */
-
     document.getElementById("result").innerHTML = `
         ENTRY #${attempt}<br><br>
 
@@ -354,11 +351,8 @@ function checkPH() {
         ${notes.join("<br>")}
     `;
 
-    /* SAVE NOTEBOOK */
-
-    const log = JSON.parse(
-        localStorage.getItem("labNotebook") || "[]"
-    );
+    /* SAVE NOTEBOOK (SESSION ONLY FIX IS ALREADY GOOD) */
+    const log = JSON.parse(sessionStorage.getItem("labNotebook") || "[]");
 
     log.push({
         attempt,
@@ -369,21 +363,16 @@ function checkPH() {
         status
     });
 
-    localStorage.setItem(
-        "labNotebook",
-        JSON.stringify(log)
-    );
+    sessionStorage.setItem("labNotebook", JSON.stringify(log));
 
     /* WIN CONDITION */
-
     if (status === "TARGET RANGE ACHIEVED") {
-
         localStorage.setItem("phSolved", "true");
 
         document.getElementById("result").innerHTML += `
             <br><br>
             <span style="color:lime;">
-            BIOLOGICAL STABILITY ACHIEVED
+                BIOLOGICAL STABILITY ACHIEVED
             </span>
         `;
     }
