@@ -249,45 +249,116 @@ let attempt = 0;
 
 function checkPH() {
 
-    const acid = document.getElementById("acid").value.toLowerCase().trim();
-    const base = document.getElementById("base").value.toLowerCase().trim();
-    const stab = document.getElementById("stabilizer").value.toLowerCase().trim();
+    const acid = document.getElementById("acid").value.toUpperCase().trim();
+    const base = document.getElementById("base").value.toUpperCase().trim();
+    const stab = document.getElementById("stabilizer").value.toUpperCase().trim();
 
     let ph = 7;
     let notes = [];
 
-    if (acid === "vinegar") {
-        ph -= 2;
-        notes.push("acid shift -2");
+    /* =========================
+       ACIDS
+    ========================== */
+
+    switch(acid) {
+
+        case "ACID-1":
+            ph -= 1.2;
+            notes.push("weak acidic reaction detected");
+            break;
+
+        case "ACID-2":
+            ph -= 3.5;
+            notes.push("aggressive acidic destabilization");
+            break;
+
+        case "ACID-3":
+            ph -= 2.0;
+            notes.push("moderate acidic shift");
+            break;
     }
 
-    if (base === "baking soda") {
-        ph += 2.5;
-        notes.push("base shift +2.5");
+    /* =========================
+       BASES
+    ========================== */
+
+    switch(base) {
+
+        case "BASE-1":
+            ph += 1.5;
+            notes.push("minor alkaline increase");
+            break;
+
+        case "BASE-2":
+            ph += 4.0;
+            notes.push("extreme alkaline spike");
+            break;
+
+        case "BASE-3":
+            ph += 2.5;
+            notes.push("controlled alkaline adjustment");
+            break;
     }
 
-    if (stab === "water") ph = 7 + (ph - 7) * 0.4;
-    if (stab === "sugar") ph = 7 + (ph - 7) * 0.6;
+    /* =========================
+       STABILIZERS
+    ========================== */
 
+    switch(stab) {
+
+        case "STABILIZER-1":
+            ph = 7 + (ph - 7) * 0.75;
+            notes.push("partial buffering active");
+            break;
+
+        case "STABILIZER-2":
+            ph = 7 + (ph - 7) * 0.40;
+            notes.push("strong neutralization detected");
+            break;
+
+        case "STABILIZER-3":
+            ph = 7 + (ph - 7) * 0.90;
+            notes.push("unstable compound suspension");
+            break;
+    }
+
+    /* CLAMP */
     ph = Math.max(0, Math.min(14, ph));
 
     attempt++;
 
-    let status =
-        ph >= 5 && ph <= 6 ? "TARGET RANGE ACHIEVED" :
-        ph < 5 ? "TOO ACIDIC" :
-        "TOO BASIC";
+    let status = "";
 
-    document.getElementById("result").innerHTML =
-        `ENTRY #${attempt}<br><br>
-        Acid: ${acid || "none"}<br>
-        Base: ${base || "none"}<br>
-        Stabilizer: ${stab || "none"}<br><br>
-        pH: <b>${ph.toFixed(2)}</b><br>
+    if (ph >= 5 && ph <= 6) {
+        status = "TARGET RANGE ACHIEVED";
+    }
+    else if (ph < 5) {
+        status = "TOO ACIDIC";
+    }
+    else {
+        status = "TOO BASIC";
+    }
+
+    /* DISPLAY */
+
+    document.getElementById("result").innerHTML = `
+        ENTRY #${attempt}<br><br>
+
+        Acid: ${acid || "NONE"}<br>
+        Base: ${base || "NONE"}<br>
+        Stabilizer: ${stab || "NONE"}<br><br>
+
+        Estimated pH: <b>${ph.toFixed(2)}</b><br>
         Status: <b>${status}</b><br><br>
-        ${notes.join("<br>")}`;
 
-    const log = getNotebook();
+        ${notes.join("<br>")}
+    `;
+
+    /* SAVE NOTEBOOK */
+
+    const log = JSON.parse(
+        localStorage.getItem("labNotebook") || "[]"
+    );
 
     log.push({
         attempt,
@@ -298,17 +369,25 @@ function checkPH() {
         status
     });
 
-    saveNotebook(log);
+    localStorage.setItem(
+        "labNotebook",
+        JSON.stringify(log)
+    );
 
-    /* =========================
-       WIN CONDITION HOOK (IMPORTANT)
-       ========================= */
+    /* WIN CONDITION */
+
     if (status === "TARGET RANGE ACHIEVED") {
+
         localStorage.setItem("phSolved", "true");
-        console.log("PH PUZZLE SOLVED");
+
+        document.getElementById("result").innerHTML += `
+            <br><br>
+            <span style="color:lime;">
+            BIOLOGICAL STABILITY ACHIEVED
+            </span>
+        `;
     }
 }
-
 </script>
 
 </body>
