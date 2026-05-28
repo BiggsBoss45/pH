@@ -138,10 +138,24 @@ button {
         <p>Select 1 Acid, 1 Base, 1 Stabilizer</p>
 
         <div class="phGrid">
-            <input id="acid" placeholder="ACID">
-            <input id="base" placeholder="BASE">
-            <input id="stabilizer" placeholder="STABILIZER">
-        </div>
+    <select id="acid">
+        <option value="1">1 - Acid 1</option>
+        <option value="2">2 - Acid 2</option>
+        <option value="3">3 - Acid 3</option>
+    </select>
+
+    <select id="base">
+        <option value="1">1 - Base 1</option>
+        <option value="2">2 - Base 2</option>
+        <option value="3">3 - Base 3</option>
+    </select>
+
+    <select id="stabilizer">
+        <option value="1">1 - Stabilizer 1</option>
+        <option value="2">2 - Stabilizer 2</option>
+        <option value="3">3 - Stabilizer 3</option>
+    </select>
+</div>
 
         <button onclick="checkPH()">SUBMIT</button>
 
@@ -296,33 +310,60 @@ function runNeutralizationSequence(isEvolved) {
 
 function checkPH() {
 
-    const acid = document.getElementById("acid").value.toUpperCase().trim();
-    const base = document.getElementById("base").value.toUpperCase().trim();
-    const stab = document.getElementById("stabilizer").value.toUpperCase().trim();
-
+    const acid = parseInt(document.getElementById("acid").value);
+const base = parseInt(document.getElementById("base").value);
+const stab = parseInt(document.getElementById("stabilizer").value);
+    
     let ph = 7;
     let notes = [];
 
     /* ACIDS */
     switch(acid) {
-        case "ACID-1": ph -= 1.5; notes.push("Citric Acid"); break;
-        case "ACID-2": ph -= 2.8; notes.push("Lime Juice"); break;
-        case "ACID-3": ph -= 2.0; notes.push("Vinegar"); break;
-    }
+    case 1:
+        ph -= 1.5;
+        notes.push("Citric Acid");
+        break;
+    case 2:
+        ph -= 2.8;
+        notes.push("Lime Juice");
+        break;
+    case 3:
+        ph -= 2.0;
+        notes.push("Vinegar");
+        break;
+}
 
     /* BASES */
     switch(base) {
-        case "BASE-1": ph += 2.5; notes.push("Baking Soda"); break;
-        case "BASE-2": ph += 0.3; notes.push("Water"); break;
-        case "BASE-3": ph += 1.2; notes.push("Rubbing Alcohol"); break;
-    }
+    case 1:
+        ph += 2.5;
+        notes.push("Baking Soda");
+        break;
+    case 2:
+        ph += 0.3;
+        notes.push("Water");
+        break;
+    case 3:
+        ph += 1.2;
+        notes.push("Rubbing Alcohol");
+        break;
+}
 
     /* STABILIZERS */
     switch(stab) {
-        case "STABILIZER-1": ph = 7 + (ph - 7) * 0.70; notes.push("Salt matrix"); break;
-        case "STABILIZER-2": ph = 7 + (ph - 7) * 0.45; notes.push("Sugar buffer"); break;
-        case "STABILIZER-3": ph = 7 + (ph - 7) * 0.60; notes.push("Gelatin structure"); break;
-    }
+    case 1:
+        ph = 7 + (ph - 7) * 0.70;
+        notes.push("Salt matrix");
+        break;
+    case 2:
+        ph = 7 + (ph - 7) * 0.45;
+        notes.push("Sugar buffer");
+        break;
+    case 3:
+        ph = 7 + (ph - 7) * 0.60;
+        notes.push("Gelatin structure");
+        break;
+}
 
     ph = Math.max(0, Math.min(14, ph));
 
