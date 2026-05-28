@@ -36,7 +36,13 @@ body {
     pointer-events: none;
 }
 
-/* BOOT SCREEN */
+/* UPLOAD */
+#uploadScreen {
+    text-align: center;
+    padding-top: 80px;
+}
+
+/* BOOT */
 #boot {
     position: fixed;
     inset: 0;
@@ -46,13 +52,14 @@ body {
     padding-top: 120px;
 }
 
-/* MAIN UI */
+/* APP */
 #app {
     display: none;
     padding: 40px;
     text-align: center;
 }
 
+/* BUTTONS */
 button {
     margin: 10px;
     padding: 12px 18px;
@@ -60,7 +67,6 @@ button {
     color: cyan;
     border: 1px solid cyan;
     cursor: pointer;
-    font-family: monospace;
 }
 
 /* PANELS */
@@ -69,7 +75,7 @@ button {
     margin-top: 30px;
 }
 
-/* pH GRID */
+/* INPUTS */
 .phGrid {
     display: flex;
     justify-content: center;
@@ -89,14 +95,15 @@ button {
 /* RESULT */
 #result {
     margin-top: 15px;
+    white-space: pre-wrap;
 }
 </style>
 </head>
 
 <body class="crt">
 
-<!-- UPLOAD -->
-<div id="uploadScreen" style="text-align:center; padding-top:60px;">
+<!-- UPLOAD SCREEN -->
+<div id="uploadScreen">
     <h2>UPLOAD RECOVERED FILE</h2>
     <input type="file" id="fileInput">
     <p id="status">AWAITING INPUT...</p>
@@ -112,11 +119,9 @@ button {
 
     <h1>DATA NODE ACCESS GRANTED</h1>
 
-    <!-- MENU -->
-    <div>
-        <button onclick="showPanel('audio')">AUDIO LOG</button>
-        <button onclick="showPanel('ph')">pH ANALYSIS</button>
-    </div>
+    <button onclick="showPanel('audio')">AUDIO LOG</button>
+    <button onclick="showPanel('ph')">pH ANALYSIS</button>
+    <button onclick="showNotebook()">LAB NOTEBOOK</button>
 
     <!-- AUDIO -->
     <div id="audioPanel" class="panel">
@@ -128,7 +133,6 @@ button {
 
     <!-- pH -->
     <div id="phPanel" class="panel">
-
         <h2>CHEMICAL STABILITY ANALYSIS</h2>
 
         <p>Select 1 Acid, 1 Base, 1 Stabilizer</p>
@@ -141,30 +145,35 @@ button {
 
         <button onclick="checkPH()">SUBMIT</button>
 
-        <p id="result"></p>
+        <div id="result"></div>
     </div>
 
 </div>
 
 <script>
 
+/* =========================
+   UPLOAD → BOOT → APP
+========================= */
+
 const fileInput = document.getElementById("fileInput");
-const status = document.getElementById("status");
+const statusText = document.getElementById("status");
 
 const boot = document.getElementById("boot");
 const bootText = document.getElementById("bootText");
-
 const app = document.getElementById("app");
+const uploadScreen = document.getElementById("uploadScreen");
 
 fileInput.addEventListener("change", () => {
 
     if (!fileInput.files[0]) return;
 
-    status.innerText = "DATA RECEIVED";
+    statusText.innerText = "DATA RECEIVED";
 
+    uploadScreen.style.display = "none";
     boot.style.display = "block";
 
-    let msgs = [
+    const msgs = [
         "INITIALIZING EXTRACTION...",
         "DECRYPTING SIGNAL...",
         "REBUILDING DATA STRUCTURE...",
@@ -173,7 +182,7 @@ fileInput.addEventListener("change", () => {
 
     let i = 0;
 
-    let interval = setInterval(() => {
+    const interval = setInterval(() => {
 
         if (i < msgs.length) {
             bootText.innerText = msgs[i];
@@ -186,42 +195,117 @@ fileInput.addEventListener("change", () => {
             setTimeout(() => {
                 boot.style.display = "none";
                 app.style.display = "block";
-            }, 1200);
+            }, 1000);
         }
 
     }, 1200);
 });
 
-/* MENU SWITCH */
+/* =========================
+   MENU
+========================= */
+
 function showPanel(type) {
-
-    document.getElementById("audioPanel").style.display = "none";
-    document.getElementById("phPanel").style.display = "none";
-
+    document.querySelectorAll(".panel").forEach(p => p.style.display = "none");
     document.getElementById(type + "Panel").style.display = "block";
 }
 
-/* pH LOGIC */
+/* =========================
+   LAB NOTEBOOK MEMORY
+========================= */
+
+function getNotebook() {
+    return JSON.parse(localStorage.getItem("labNotebook") || "[]");
+}
+
+function saveNotebook(log) {
+    localStorage.setItem("labNotebook", JSON.stringify(log));
+}
+
+function showNotebook() {
+
+    const log = getNotebook();
+
+    let out = "LAB NOTEBOOK\n\n";
+
+    log.forEach(e => {
+        out += `ENTRY #${e.attempt}
+Acid: ${e.acid}
+Base: ${e.base}
+Stabilizer: ${e.stabilizer}
+pH: ${e.ph}
+Status: ${e.status}
+------------------------\n`;
+    });
+
+    document.getElementById("result").innerText = out;
+}
+
+/* =========================
+   pH SYSTEM
+========================= */
+
+let attempt = 0;
+
 function checkPH() {
 
-    const acid = document.getElementById("acid").value.toLowerCase();
-    const base = document.getElementById("base").value.toLowerCase();
-    const stab = document.getElementById("stabilizer").value.toLowerCase();
+    const acid = document.getElementById("acid").value.toLowerCase().trim();
+    const base = document.getElementById("base").value.toLowerCase().trim();
+    const stab = document.getElementById("stabilizer").value.toLowerCase().trim();
 
-    const validAcids = ["vinegar"];
-    const validBases = ["baking soda"];
-    const validStab = ["sugar", "water"];
+    let ph = 7;
+    let notes = [];
 
-    if (
-        validAcids.includes(acid) &&
-        validBases.includes(base) &&
-        validStab.includes(stab)
-    ) {
-        document.getElementById("result").innerText =
-            "STABLE PH RANGE ACHIEVED (5–6)";
-    } else {
-        document.getElementById("result").innerText =
-            "UNSTABLE COMBINATION";
+    if (acid === "vinegar") {
+        ph -= 2;
+        notes.push("acid shift -2");
+    }
+
+    if (base === "baking soda") {
+        ph += 2.5;
+        notes.push("base shift +2.5");
+    }
+
+    if (stab === "water") ph = 7 + (ph - 7) * 0.4;
+    if (stab === "sugar") ph = 7 + (ph - 7) * 0.6;
+
+    ph = Math.max(0, Math.min(14, ph));
+
+    attempt++;
+
+    let status =
+        ph >= 5 && ph <= 6 ? "TARGET RANGE ACHIEVED" :
+        ph < 5 ? "TOO ACIDIC" :
+        "TOO BASIC";
+
+    document.getElementById("result").innerHTML =
+        `ENTRY #${attempt}<br><br>
+        Acid: ${acid || "none"}<br>
+        Base: ${base || "none"}<br>
+        Stabilizer: ${stab || "none"}<br><br>
+        pH: <b>${ph.toFixed(2)}</b><br>
+        Status: <b>${status}</b><br><br>
+        ${notes.join("<br>")}`;
+
+    const log = getNotebook();
+
+    log.push({
+        attempt,
+        acid,
+        base,
+        stabilizer: stab,
+        ph: ph.toFixed(2),
+        status
+    });
+
+    saveNotebook(log);
+
+    /* =========================
+       WIN CONDITION HOOK (IMPORTANT)
+       ========================= */
+    if (status === "TARGET RANGE ACHIEVED") {
+        localStorage.setItem("phSolved", "true");
+        console.log("PH PUZZLE SOLVED");
     }
 }
 
