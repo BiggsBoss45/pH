@@ -165,11 +165,9 @@ button {
 </div>
 <script>
 
-let attempt = 0;
+window.addEventListener("DOMContentLoaded", () => {
 
-/* =========================
-   BOOT SYSTEM
-========================= */
+let attempt = 0;
 
 const fileInput = document.getElementById("fileInput");
 const statusText = document.getElementById("status");
@@ -178,7 +176,7 @@ const boot = document.getElementById("boot");
 const bootText = document.getElementById("bootText");
 const app = document.getElementById("app");
 const uploadScreen = document.getElementById("uploadScreen");
-
+    
 fileInput.addEventListener("change", () => {
 
     const file = fileInput.files[0];
@@ -199,7 +197,6 @@ fileInput.addEventListener("change", () => {
 
     reader.onload = () => {
 
-        // OPTIONAL: store image if you want later use
         localStorage.setItem("uploadedImage", reader.result);
 
         const msgs = [
