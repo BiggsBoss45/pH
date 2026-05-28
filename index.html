@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>DATA RECOVERY NODE</title>
+<title>DATA NODE</title>
+
 <style>
 body {
     background: black;
     color: cyan;
     font-family: monospace;
     text-align: center;
-    padding: 40px;
+    padding-top: 60px;
 }
 
 #puzzle {
@@ -16,31 +17,41 @@ body {
     margin-top: 30px;
 }
 
-button {
+input, button {
     margin-top: 10px;
     padding: 10px;
     background: black;
     color: cyan;
     border: 1px solid cyan;
+    font-family: monospace;
+}
+
+#status {
+    margin-top: 20px;
+    opacity: 0.8;
 }
 </style>
 </head>
 
 <body>
 
-<h1>UPLOAD RECOVERED IMAGE</h1>
+<h1>BIODATA UPLOAD TERMINAL</h1>
+
+<p>Upload recovered image file</p>
 
 <input type="file" id="fileInput">
+
+<div id="status">AWAITING INPUT...</div>
 
 <div id="puzzle">
 
     <h2>ACCESS GRANTED</h2>
 
-    <audio controls>
+    <audio id="log" controls>
         <source src="audio-log.mp3" type="audio/mpeg">
     </audio>
 
-    <h3>pH SYSTEM INPUT</h3>
+    <h3>pH ANALYSIS</h3>
 
     <input id="phInput" placeholder="Enter pH value">
     <button onclick="checkPH()">SUBMIT</button>
@@ -51,32 +62,39 @@ button {
 
 <script>
 
-document.getElementById("fileInput").addEventListener("change", function(e) {
+const fileInput = document.getElementById("fileInput");
+const status = document.getElementById("status");
+const puzzle = document.getElementById("puzzle");
 
-    const file = e.target.files[0];
+let uploaded = false;
+
+/* ACCEPT ANY FILE */
+fileInput.addEventListener("change", () => {
+
+    const file = fileInput.files[0];
 
     if (!file) return;
 
-    // SIMPLE CHECK (you can upgrade later)
-    if (file.name.includes("image1")) {
+    uploaded = true;
 
-        document.getElementById("puzzle").style.display = "block";
+    status.innerText = "DATA RECEIVED // EXTRACTION COMPLETE";
 
-    } else {
-
-        alert("INVALID DATA FILE");
-    }
-
+    setTimeout(() => {
+        puzzle.style.display = "block";
+    }, 1200);
 });
 
+/* pH CHECK */
 function checkPH() {
 
     const val = parseFloat(document.getElementById("phInput").value);
 
     if (val >= 5 && val <= 6) {
-        document.getElementById("result").innerText = "CORRECT. NEXT STAGE UNLOCKED";
+        document.getElementById("result").innerText =
+            "STABILITY ACHIEVED // SYSTEM RESTORED";
     } else {
-        document.getElementById("result").innerText = "INCORRECT COMBINATION";
+        document.getElementById("result").innerText =
+            "IMBALANCE DETECTED";
     }
 }
 
