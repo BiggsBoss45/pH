@@ -104,7 +104,14 @@ button {
 
     <h1>DATA NODE ACCESS GRANTED</h1>
 
+    <button onclick="showPanel('audio')">AUDIO LOG</button>
     <button onclick="showPanel('ph')">pH ANALYSIS</button>
+
+    <div id="audioPanel" class="panel">
+        <audio controls>
+            <source src="audio-log.mp3">
+        </audio>
+    </div>
 
     <div id="phPanel" class="panel">
 
@@ -137,19 +144,80 @@ button {
 
 <script>
 let attempt = 0;
-let ecoli = [];
 
 const canvas = document.getElementById("petri");
 const ctx = canvas.getContext("2d");
 
+let ecoli = [];
+
 const VACCINE_NAME = "VX-ALPHA-3B1";
 
 /* =========================
-   INIT
+   BOOT
+========================= */
+
+const fileInput = document.getElementById("fileInput");
+const statusText = document.getElementById("status");
+
+fileInput.addEventListener("change", () => {
+
+    const file = fileInput.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+        statusText.innerText = "INVALID FILE TYPE";
+        return;
+    }
+
+    statusText.innerText = "IMAGE RECEIVED";
+
+    document.getElementById("uploadScreen").style.display = "none";
+    document.getElementById("boot").style.display = "block";
+
+    const msgs = [
+        "SCANNING IMAGE STRUCTURE...",
+        "DETECTING BIOLOGICAL PATTERNS...",
+        "ANALYZING ANOMALIES...",
+        "FINALIZING DATA MODEL..."
+    ];
+
+    let i = 0;
+    const bootText = document.getElementById("bootText");
+
+    const interval = setInterval(() => {
+        if (i < msgs.length) {
+            bootText.innerText = msgs[i++];
+        } else {
+            clearInterval(interval);
+            bootText.innerText = "ANALYSIS COMPLETE";
+
+            setTimeout(() => {
+                document.getElementById("boot").style.display = "none";
+                document.getElementById("app").style.display = "block";
+
+                initEcoli();
+                drawPetri();
+            }, 1000);
+        }
+    }, 1200);
+});
+
+/* =========================
+   MENU
+========================= */
+
+function showPanel(type) {
+    document.querySelectorAll(".panel").forEach(p => p.style.display = "none");
+    document.getElementById(type + "Panel").style.display = "block";
+}
+
+/* =========================
+   PETRI
 ========================= */
 
 function initEcoli(count = 60) {
     ecoli = [];
+
     for (let i = 0; i < count; i++) {
         ecoli.push({
             x: Math.random() * canvas.width,
@@ -161,10 +229,6 @@ function initEcoli(count = 60) {
         });
     }
 }
-
-/* =========================
-   DRAW LOOP
-========================= */
 
 function drawPetri() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -204,6 +268,7 @@ function drawPetri() {
 ========================= */
 
 function killTemporary(amount, duration = 120) {
+
     let alive = ecoli.filter(e => e.alive);
 
     for (let i = 0; i < amount && alive.length > 0; i++) {
@@ -219,6 +284,7 @@ function killTemporary(amount, duration = 120) {
 }
 
 function killPermanent(amount, delay = 60) {
+
     let alive = ecoli.filter(e => e.alive);
 
     for (let i = 0; i < amount && alive.length > 0; i++) {
@@ -234,7 +300,7 @@ function killPermanent(amount, delay = 60) {
 }
 
 /* =========================
-   VACCINE REVEAL
+   VACCINE
 ========================= */
 
 function revealVaccineName() {
@@ -248,54 +314,7 @@ function revealVaccineName() {
 }
 
 /* =========================
-   UI
-========================= */
-
-function showPanel(type) {
-    document.querySelectorAll(".panel").forEach(p => p.style.display = "none");
-    document.getElementById(type + "Panel").style.display = "block";
-}
-
-/* =========================
-   BOOT
-========================= */
-
-document.getElementById("fileInput").addEventListener("change", () => {
-
-    const file = fileInput.files[0];
-    if (!file) return;
-
-    if (!file.type.startsWith("image/")) return;
-
-    document.getElementById("uploadScreen").style.display = "none";
-    document.getElementById("boot").style.display = "block";
-
-    const msgs = [
-        "SCANNING IMAGE STRUCTURE...",
-        "DETECTING BIOLOGICAL PATTERNS...",
-        "ANALYZING ANOMALIES...",
-        "FINALIZING DATA MODEL..."
-    ];
-
-    let i = 0;
-    const bootText = document.getElementById("bootText");
-
-    const interval = setInterval(() => {
-        if (i < msgs.length) {
-            bootText.textContent = msgs[i++];
-        } else {
-            clearInterval(interval);
-            document.getElementById("boot").style.display = "none";
-            document.getElementById("app").style.display = "block";
-
-            initEcoli();
-            drawPetri();
-        }
-    }, 1200);
-});
-
-/* =========================
-   MAIN LOGIC
+   GAME LOGIC
 ========================= */
 
 function checkPH() {
@@ -304,9 +323,9 @@ function checkPH() {
 
     let ph = 7;
 
-    const acid = +document.getElementById("acid").value;
-    const base = +document.getElementById("base").value;
-    const stab = +document.getElementById("stabilizer").value;
+    const acid = parseInt(document.getElementById("acid").value);
+    const base = parseInt(document.getElementById("base").value);
+    const stab = parseInt(document.getElementById("stabilizer").value);
 
     const correctCombo = (acid === 3 && base === 2 && stab === 1);
 
@@ -319,29 +338,25 @@ function checkPH() {
     attempt++;
 
     const inTarget = (ph >= 5 && ph <= 6);
-    const alive = ecoli.filter(e => e.alive).length;
+    let aliveCount = ecoli.filter(e => e.alive).length;
 
     const result = document.getElementById("result");
 
+    if (!inTarget) {
+        killTemporary(Math.floor(aliveCount * 0.35), 160);
+        result.innerHTML = `ENTRY #${attempt}<br><br>UNSTABLE`;
+        return;
+    }
+
     if (correctCombo) {
-        killPermanent(alive, 40);
+        killPermanent(aliveCount, 40);
         result.innerHTML = `ENTRY #${attempt}<br><br>PERFECT MATCH`;
         setTimeout(revealVaccineName, 1200);
-    }
-    else if (inTarget) {
-        killTemporary(alive, 120);
-        result.innerHTML = `ENTRY #${attempt}<br><br>STABLE (INCORRECT)`;
-    }
-    else {
-        killTemporary(Math.floor(alive * 0.35), 160);
-        result.innerHTML = `ENTRY #${attempt}<br><br>UNSTABLE`;
+    } else {
+        killTemporary(aliveCount, 120);
+        result.innerHTML = `ENTRY #${attempt}<br><br>STABLE BUT INCORRECT`;
     }
 }
-
-/* START */
-window.onload = () => {
-    drawPetri();
-};
 </script>
 
 </body>
