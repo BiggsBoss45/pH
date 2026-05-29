@@ -35,6 +35,7 @@ body {
     pointer-events: none;
 }
 
+/* screens */
 #uploadScreen {
     text-align: center;
     padding-top: 80px;
@@ -55,14 +56,7 @@ body {
     text-align: center;
 }
 
-#petri {
-    background: #050a05;
-    border: 2px solid cyan;
-    border-radius: 50%;
-    display: block;
-    margin: 20px auto;
-}
-
+/* buttons */
 button {
     margin: 10px;
     padding: 12px 18px;
@@ -74,9 +68,19 @@ button {
 
 .panel {
     display: none;
-    margin-top: 30px;
+    margin-top: 20px;
 }
 
+/* PETRI DISH */
+#petri {
+    background: #050a05;
+    border: 2px solid cyan;
+    border-radius: 50%;
+    display: block;
+    margin: 20px auto;
+}
+
+/* pH */
 .phGrid {
     display: flex;
     justify-content: center;
@@ -93,54 +97,60 @@ button {
 
 <body class="crt">
 
+<!-- UPLOAD -->
 <div id="uploadScreen">
     <h2>UPLOAD RECOVERED FILE</h2>
     <input type="file" id="fileInput">
     <p id="status">AWAITING INPUT...</p>
 </div>
 
+<!-- BOOT -->
 <div id="boot">
     <h2 id="bootText">INITIALIZING...</h2>
 </div>
 
+<!-- APP -->
 <div id="app">
 
     <h1>DATA NODE ACCESS GRANTED</h1>
 
+    <button onclick="showPanel('audio')">AUDIO LOG</button>
     <button onclick="showPanel('ph')">pH ANALYSIS</button>
+    <button onclick="showNotebook()">LAB NOTEBOOK</button>
+
+    <div id="audioPanel" class="panel">
+        <audio controls>
+            <source src="audio-log.mp3">
+        </audio>
+    </div>
 
     <div id="phPanel" class="panel">
 
-        <h2>CHEMICAL STABILITY ANALYSIS</h2>
-
-        <!-- 🧫 PETRI DISH -->
         <canvas id="petri" width="400" height="400"></canvas>
 
         <div class="phGrid">
             <select id="acid">
-                <option value="1">1 - Acid 1</option>
-                <option value="2">2 - Acid 2</option>
-                <option value="3">3 - Acid 3</option>
+                <option value="1">Acid 1</option>
+                <option value="2">Acid 2</option>
+                <option value="3">Acid 3</option>
             </select>
 
             <select id="base">
-                <option value="1">1 - Base 1</option>
-                <option value="2">2 - Base 2</option>
-                <option value="3">3 - Base 3</option>
+                <option value="1">Base 1</option>
+                <option value="2">Base 2</option>
+                <option value="3">Base 3</option>
             </select>
 
             <select id="stabilizer">
-                <option value="1">1 - Stabilizer 1</option>
-                <option value="2">2 - Stabilizer 2</option>
-                <option value="3">3 - Stabilizer 3</option>
+                <option value="1">Stabilizer 1</option>
+                <option value="2">Stabilizer 2</option>
+                <option value="3">Stabilizer 3</option>
             </select>
         </div>
 
         <button onclick="checkPH()">SUBMIT</button>
-
         <div id="result"></div>
     </div>
-
 </div>
 
 <script>
@@ -148,7 +158,67 @@ button {
 let attempt = 0;
 
 /* =========================
-   CANVAS SYSTEM
+   BOOT FIX
+========================= */
+
+const fileInput = document.getElementById("fileInput");
+const statusText = document.getElementById("status");
+const boot = document.getElementById("boot");
+const bootText = document.getElementById("bootText");
+const app = document.getElementById("app");
+const uploadScreen = document.getElementById("uploadScreen");
+
+fileInput.addEventListener("change", () => {
+
+    const file = fileInput.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+        statusText.innerText = "INVALID FILE TYPE";
+        return;
+    }
+
+    statusText.innerText = "IMAGE RECEIVED";
+
+    uploadScreen.style.display = "none";
+    boot.style.display = "block";
+
+    const msgs = [
+        "SCANNING IMAGE STRUCTURE...",
+        "DETECTING BIOLOGICAL PATTERNS...",
+        "ANALYZING ANOMALIES...",
+        "FINALIZING DATA MODEL..."
+    ];
+
+    let i = 0;
+    const interval = setInterval(() => {
+        if (i < msgs.length) {
+            bootText.innerText = msgs[i++];
+        } else {
+            clearInterval(interval);
+            bootText.innerText = "ANALYSIS COMPLETE";
+
+            setTimeout(() => {
+                boot.style.display = "none";
+                app.style.display = "block";
+                initEcoli();   // start bacteria AFTER unlock
+                drawPetri();
+            }, 1000);
+        }
+    }, 1200);
+});
+
+/* =========================
+   MENU
+========================= */
+
+function showPanel(type) {
+    document.querySelectorAll(".panel").forEach(p => p.style.display = "none");
+    document.getElementById(type + "Panel").style.display = "block";
+}
+
+/* =========================
+   PETRI DISH SYSTEM
 ========================= */
 
 const canvas = document.getElementById("petri");
@@ -162,14 +232,12 @@ function initEcoli(count = 60) {
         ecoli.push({
             x: Math.random() * canvas.width,
             y: Math.random() * canvas.height,
-            alive: true,
             vx: (Math.random() - 0.5) * 1.5,
-            vy: (Math.random() - 0.5) * 1.5
+            vy: (Math.random() - 0.5) * 1.5,
+            alive: true
         });
     }
 }
-
-initEcoli();
 
 function drawPetri() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -192,21 +260,20 @@ function drawPetri() {
     requestAnimationFrame(drawPetri);
 }
 
-drawPetri();
-
 /* =========================
-   DEATH ANIMATION
+   KILL ANIMATION (ONE BY ONE)
 ========================= */
 
-function killRandomEcoli(amount, speed = 1) {
+function killEcoli(amount, delay = 80) {
+
     let alive = ecoli.filter(e => e.alive);
 
     for (let i = 0; i < amount && alive.length > 0; i++) {
-        let target = alive[Math.floor(Math.random() * alive.length)];
 
-        setTimeout(() => {
-            target.alive = false;
-        }, i * speed * 100);
+        let target = alive[Math.floor(Math.random() * alive.length)];
+        target.alive = false;
+
+        alive = ecoli.filter(e => e.alive);
     }
 }
 
@@ -216,11 +283,11 @@ function killRandomEcoli(amount, speed = 1) {
 
 function checkPH() {
 
+    let ph = 7;
+
     const acid = parseInt(document.getElementById("acid").value);
     const base = parseInt(document.getElementById("base").value);
     const stab = parseInt(document.getElementById("stabilizer").value);
-
-    let ph = 7;
 
     switch(acid){
         case 1: ph -= 1.5; break;
@@ -235,53 +302,42 @@ function checkPH() {
     }
 
     switch(stab){
-        case 1: ph = 7 + (ph - 7)*0.7; break;
-        case 2: ph = 7 + (ph - 7)*0.45; break;
-        case 3: ph = 7 + (ph - 7)*0.6; break;
+        case 1: ph = 7 + (ph-7)*0.7; break;
+        case 2: ph = 7 + (ph-7)*0.45; break;
+        case 3: ph = 7 + (ph-7)*0.6; break;
     }
 
     ph = Math.max(0, Math.min(14, ph));
 
     attempt++;
 
-    const inTargetRange = (ph >= 5 && ph <= 6);
-    const closeRange = (ph >= 4 && ph <= 7);
+    const inTarget = (ph >= 5 && ph <= 6);
+    const close = (ph >= 4 && ph <= 7);
 
-    /* RESET IF EMPTY */
-    if (ecoli.length === 0) initEcoli(60);
+    let aliveCount = ecoli.filter(e => e.alive).length;
 
-    /* NO RESPONSE */
-    if (!closeRange) {
-        document.getElementById("result").innerHTML =
-        `ENTRY #${attempt}<br><br>No biological response.`;
-        return;
+    if (!close) {
+        // nothing happens
     }
-
-    /* PARTIAL DEATH */
-    if (closeRange && !inTargetRange) {
-        killRandomEcoli(12, 2);
+    else if (inTarget) {
+        killEcoli(aliveCount); // full wipe
     }
-
-    /* FULL WIPE (ONE BY ONE) */
-    if (inTargetRange) {
-        killRandomEcoli(ecoli.filter(e => e.alive).length, 1.2);
+    else {
+        killEcoli(Math.floor(aliveCount * 0.35)); // partial wipe
     }
-
-    let status = inTargetRange ? "STABLE WINDOW" : "UNSTABLE RANGE";
 
     document.getElementById("result").innerHTML =
-    `ENTRY #${attempt}<br><br>
-Estimated pH: <b>${ph.toFixed(2)}</b><br>
-Status: <b>${status}</b>`;
+        `ENTRY #${attempt}<br><br>
+        pH: <b>${ph.toFixed(2)}</b><br>
+        STATUS: <b>${inTarget ? "PERFECT WINDOW" : close ? "CLOSE RANGE" : "NO EFFECT"}</b>`;
 }
 
 /* =========================
-   UI (MINIMAL)
+   NOTEBOOK (optional)
 ========================= */
 
-function showPanel(type) {
-    document.querySelectorAll(".panel").forEach(p => p.style.display = "none");
-    document.getElementById(type + "Panel").style.display = "block";
+function showNotebook() {
+    document.getElementById("result").innerText = "Notebook system ready (can expand later).";
 }
 
 </script>
