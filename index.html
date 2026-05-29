@@ -55,6 +55,14 @@ body {
     text-align: center;
 }
 
+#petri {
+    background: #050a05;
+    border: 2px solid cyan;
+    border-radius: 50%;
+    display: block;
+    margin: 20px auto;
+}
+
 button {
     margin: 10px;
     padding: 12px 18px;
@@ -99,19 +107,14 @@ button {
 
     <h1>DATA NODE ACCESS GRANTED</h1>
 
-    <button onclick="showPanel('audio')">AUDIO LOG</button>
     <button onclick="showPanel('ph')">pH ANALYSIS</button>
-    <button onclick="showNotebook()">LAB NOTEBOOK</button>
-
-    <div id="audioPanel" class="panel">
-        <h2>AUDIO LOG</h2>
-        <audio controls>
-            <source src="audio-log.mp3">
-        </audio>
-    </div>
 
     <div id="phPanel" class="panel">
+
         <h2>CHEMICAL STABILITY ANALYSIS</h2>
+
+        <!-- 🧫 PETRI DISH -->
+        <canvas id="petri" width="400" height="400"></canvas>
 
         <div class="phGrid">
             <select id="acid">
@@ -145,107 +148,70 @@ button {
 let attempt = 0;
 
 /* =========================
-   IMAGE BOOT FIXED
+   CANVAS SYSTEM
 ========================= */
 
-const fileInput = document.getElementById("fileInput");
-const statusText = document.getElementById("status");
+const canvas = document.getElementById("petri");
+const ctx = canvas.getContext("2d");
 
-const boot = document.getElementById("boot");
-const bootText = document.getElementById("bootText");
-const app = document.getElementById("app");
-const uploadScreen = document.getElementById("uploadScreen");
+let ecoli = [];
 
-fileInput.addEventListener("change", () => {
+function initEcoli(count = 60) {
+    ecoli = [];
+    for (let i = 0; i < count; i++) {
+        ecoli.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            alive: true,
+            vx: (Math.random() - 0.5) * 1.5,
+            vy: (Math.random() - 0.5) * 1.5
+        });
+    }
+}
 
-    const file = fileInput.files[0];
-    if (!file) return;
+initEcoli();
 
-    if (!file.type.startsWith("image/")) {
-        statusText.innerText = "INVALID FILE TYPE";
-        return;
+function drawPetri() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (let b of ecoli) {
+        if (!b.alive) continue;
+
+        b.x += b.vx;
+        b.y += b.vy;
+
+        if (b.x < 0 || b.x > canvas.width) b.vx *= -1;
+        if (b.y < 0 || b.y > canvas.height) b.vy *= -1;
+
+        ctx.beginPath();
+        ctx.fillStyle = "lime";
+        ctx.arc(b.x, b.y, 3, 0, Math.PI * 2);
+        ctx.fill();
     }
 
-    statusText.innerText = "IMAGE RECEIVED";
+    requestAnimationFrame(drawPetri);
+}
 
-    uploadScreen.style.display = "none";
-    boot.style.display = "block";
-
-    const reader = new FileReader();
-
-    reader.onload = () => {
-
-        localStorage.setItem("uploadedImage", reader.result);
-
-        const msgs = [
-            "SCANNING IMAGE STRUCTURE...",
-            "DETECTING BIOLOGICAL PATTERNS...",
-            "ANALYZING ANOMALIES...",
-            "FINALIZING DATA MODEL..."
-        ];
-
-        let i = 0;
-
-        const interval = setInterval(() => {
-            if (i < msgs.length) {
-                bootText.innerText = msgs[i++];
-            } else {
-                clearInterval(interval);
-
-                bootText.innerText = "IMAGE ANALYSIS COMPLETE";
-
-                setTimeout(() => {
-                    boot.style.display = "none";
-                    app.style.display = "block";
-                }, 1000);
-            }
-        }, 1200);
-    };
-
-    reader.readAsDataURL(file);
-});
+drawPetri();
 
 /* =========================
-   MENU
+   DEATH ANIMATION
 ========================= */
 
-function showPanel(type) {
-    document.querySelectorAll(".panel").forEach(p => p.style.display = "none");
-    document.getElementById(type + "Panel").style.display = "block";
+function killRandomEcoli(amount, speed = 1) {
+    let alive = ecoli.filter(e => e.alive);
+
+    for (let i = 0; i < amount && alive.length > 0; i++) {
+        let target = alive[Math.floor(Math.random() * alive.length)];
+
+        setTimeout(() => {
+            target.alive = false;
+        }, i * speed * 100);
+    }
 }
 
 /* =========================
-   NOTEBOOK
-========================= */
-
-function getNotebook() {
-    return JSON.parse(localStorage.getItem("labNotebook") || "[]");
-}
-
-function saveNotebook(log) {
-    localStorage.setItem("labNotebook", JSON.stringify(log));
-}
-
-function showNotebook() {
-
-    const log = getNotebook();
-    let out = "LAB NOTEBOOK\n\n";
-
-    log.forEach(e => {
-        out += `ENTRY #${e.attempt}
-Acid: ${e.acid}
-Base: ${e.base}
-Stabilizer: ${e.stabilizer}
-pH: ${e.ph}
-Status: ${e.status}
-------------------------\n`;
-    });
-
-    document.getElementById("result").innerText = out;
-}
-
-/* =========================
-   pH SYSTEM (UNCHANGED CORE)
+   pH SYSTEM
 ========================= */
 
 function checkPH() {
@@ -255,18 +221,17 @@ function checkPH() {
     const stab = parseInt(document.getElementById("stabilizer").value);
 
     let ph = 7;
-    let notes = [];
 
     switch(acid){
-        case 1: ph -= 1.5; notes.push("Citric Acid"); break;
-        case 2: ph -= 2.8; notes.push("Lime Juice"); break;
-        case 3: ph -= 2.0; notes.push("Vinegar"); break;
+        case 1: ph -= 1.5; break;
+        case 2: ph -= 2.8; break;
+        case 3: ph -= 2.0; break;
     }
 
     switch(base){
-        case 1: ph += 2.5; notes.push("Baking Soda"); break;
-        case 2: ph += 0.3; notes.push("Water"); break;
-        case 3: ph += 1.2; notes.push("Rubbing Alcohol"); break;
+        case 1: ph += 2.5; break;
+        case 2: ph += 0.3; break;
+        case 3: ph += 1.2; break;
     }
 
     switch(stab){
@@ -280,17 +245,43 @@ function checkPH() {
     attempt++;
 
     const inTargetRange = (ph >= 5 && ph <= 6);
+    const closeRange = (ph >= 4 && ph <= 7);
 
-    let status = inTargetRange ? "STABLE WINDOW" : "UNSTABLE";
+    /* RESET IF EMPTY */
+    if (ecoli.length === 0) initEcoli(60);
+
+    /* NO RESPONSE */
+    if (!closeRange) {
+        document.getElementById("result").innerHTML =
+        `ENTRY #${attempt}<br><br>No biological response.`;
+        return;
+    }
+
+    /* PARTIAL DEATH */
+    if (closeRange && !inTargetRange) {
+        killRandomEcoli(12, 2);
+    }
+
+    /* FULL WIPE (ONE BY ONE) */
+    if (inTargetRange) {
+        killRandomEcoli(ecoli.filter(e => e.alive).length, 1.2);
+    }
+
+    let status = inTargetRange ? "STABLE WINDOW" : "UNSTABLE RANGE";
 
     document.getElementById("result").innerHTML =
     `ENTRY #${attempt}<br><br>
 Estimated pH: <b>${ph.toFixed(2)}</b><br>
 Status: <b>${status}</b>`;
+}
 
-    const log = getNotebook();
-    log.push({attempt, acid, base, stabilizer: stab, ph: ph.toFixed(2), status});
-    saveNotebook(log);
+/* =========================
+   UI (MINIMAL)
+========================= */
+
+function showPanel(type) {
+    document.querySelectorAll(".panel").forEach(p => p.style.display = "none");
+    document.getElementById(type + "Panel").style.display = "block";
 }
 
 </script>
