@@ -389,29 +389,39 @@ function checkPH() {
     }
 
    // PERFECT COMBO
+// PERFECT COMBO
 killPermanent(aliveCount, 40);
 
 console.log("CORRECT COMBINATION DETECTED");
 
-result.innerHTML =
-`ENTRY #${attempt}<br><br>
+result.innerHTML = `
+ENTRY #${attempt}<br><br>
 pH: <b>${ph.toFixed(2)}</b><br>
 STATUS: <b>PERFECT MATCH</b><br><br>
 
-<button onclick="generateVaccine()">
-    GENERATE VACCINE
-</button>`;
+<button id="vaccineBtn">GENERATE VACCINE</button>
+`;
+
+document
+.getElementById("vaccineBtn")
+.addEventListener("click", generateVaccine);
 
 function generateVaccine() {
 
     const result = document.getElementById("result");
 
+    if (document.getElementById("vaccineReveal")) return;
+
     result.innerHTML += `
-        <br><br>
-        <span style="color:lime; font-size:22px;">
+        <div id="vaccineReveal"
+        style="
+            color:lime;
+            font-size:22px;
+            margin-top:20px;
+        ">
             FINAL VACCINE IDENTIFIED:<br><br>
             <b>VX-ALPHA-3B1</b>
-        </span>
+        </div>
     `;
 }
 </script>
