@@ -50,6 +50,8 @@ body {
 #app {
     display: none;
     padding: 40px;
+    overflow-y: auto;
+    height: 100vh;
 }
 
 button {
@@ -386,18 +388,19 @@ function checkPH() {
         return;
     }
 
-    // PERFECT COMBO
-    killPermanent(aliveCount, 40);
+   // PERFECT COMBO
+killPermanent(aliveCount, 40);
 
-    result.innerHTML =
-    `ENTRY #${attempt}<br><br>
-    pH: <b>${ph.toFixed(2)}</b><br>
-    STATUS: <b>PERFECT MATCH</b><br><br>
+console.log("CORRECT COMBINATION DETECTED");
 
-    <button onclick="generateVaccine()">
-        GENERATE VACCINE
-    </button>`;
-}
+result.innerHTML =
+`ENTRY #${attempt}<br><br>
+pH: <b>${ph.toFixed(2)}</b><br>
+STATUS: <b>PERFECT MATCH</b><br><br>
+
+<button onclick="generateVaccine()">
+    GENERATE VACCINE
+</button>`;
 
 function generateVaccine() {
 
