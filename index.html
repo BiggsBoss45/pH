@@ -395,11 +395,31 @@ killPermanent(aliveCount, 40);
 console.log("CORRECT COMBINATION DETECTED");
 
 result.innerHTML = `
-ENTRY #${attempt}<br><br>
-pH: <b>${ph.toFixed(2)}</b><br>
-STATUS: <b>PERFECT MATCH</b><br><br>
+<div style="margin-top:-10px;">
 
-<button id="vaccineBtn">GENERATE VACCINE</button>
+ENTRY #${attempt}<br><br>
+
+pH: <b>${ph.toFixed(2)}</b><br>
+
+STATUS: <b style="color:lime;">PERFECT MATCH</b>
+
+</div>
+
+<button id="vaccineBtn"
+style="
+    display:block;
+    margin:25px auto 10px auto;
+    padding:18px 28px;
+    font-size:20px;
+    font-weight:bold;
+    border:2px solid lime;
+    color:lime;
+    background:black;
+    box-shadow:0 0 15px lime;
+    cursor:pointer;
+">
+    GENERATE VACCINE
+</button>
 `;
 
 document
