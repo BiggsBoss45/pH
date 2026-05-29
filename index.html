@@ -323,17 +323,18 @@ function revealVaccineName() {
 
 function checkPH() {
 
-const correctCombo =
-    acid === 3 &&
-    base === 2 &&
-    stab === 1;
-    
     resetPetri();
+
     let ph = 7;
 
     const acid = parseInt(document.getElementById("acid").value);
     const base = parseInt(document.getElementById("base").value);
     const stab = parseInt(document.getElementById("stabilizer").value);
+
+    const correctCombo =
+        acid === 3 &&
+        base === 2 &&
+        stab === 1;
 
     switch(acid){
         case 1: ph -= 1.5; break;
@@ -362,27 +363,39 @@ const correctCombo =
 
     let aliveCount = ecoli.filter(e => e.alive).length;
 
+    // reset result every time
+    document.getElementById("result").innerHTML = "";
+
     if (!close) {
-        // nothing happens
+        document.getElementById("result").innerHTML =
+            `ENTRY #${attempt}<br><br>NO EFFECT DETECTED`;
+        return;
     }
+
     if (inTarget) {
 
-    killEcoli(aliveCount, 40);
+        killEcoli(aliveCount, 40);
 
-    if (correctCombo) {
-        setTimeout(() => {
-            revealVaccineName();
-        }, 1500);
-    }
-}
-    else {
-        killEcoli(Math.floor(aliveCount * 0.35), 60);// partial wipe
-    }
+        document.getElementById("result").innerHTML =
+            `ENTRY #${attempt}<br><br>
+            pH: <b>${ph.toFixed(2)}</b><br>
+            STATUS: <b>PERFECT WINDOW</b>`;
 
-    document.getElementById("result").innerHTML =
-        `ENTRY #${attempt}<br><br>
-        pH: <b>${ph.toFixed(2)}</b><br>
-        STATUS: <b>${inTarget ? "PERFECT WINDOW" : close ? "CLOSE RANGE" : "NO EFFECT"}</b>`;
+        if (correctCombo) {
+            setTimeout(() => {
+                revealVaccineName();
+            }, 1500);
+        }
+
+    } else {
+
+        killEcoli(Math.floor(aliveCount * 0.35), 60);
+
+        document.getElementById("result").innerHTML =
+            `ENTRY #${attempt}<br><br>
+            pH: <b>${ph.toFixed(2)}</b><br>
+            STATUS: <b>CLOSE RANGE</b>`;
+    }
 }
 
 /* =========================
