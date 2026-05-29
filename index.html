@@ -305,8 +305,28 @@ function killEcoli(amount, delay = 80) {
 /* =========================
    pH SYSTEM
 ========================= */
+function revealVaccineName() {
+    const result = document.getElementById("result");
+
+    const vaccineName = "VX-ALPHA-3B1";
+
+    result.innerHTML += `
+        <br><br>
+        <span style="color:lime;">
+        FINAL VACCINE IDENTIFIED:<br>
+        <b>${vaccineName}</b>
+        </span>
+    `;
+
+    localStorage.setItem("vaccineName", vaccineName);
+}
 
 function checkPH() {
+
+const correctCombo =
+    acid === 3 &&
+    base === 2 &&
+    stab === 1;
     
     resetPetri();
     let ph = 7;
@@ -345,9 +365,16 @@ function checkPH() {
     if (!close) {
         // nothing happens
     }
-    else if (inTarget) {
-       killEcoli(aliveCount, 40); // full wipe
+    if (inTarget) {
+
+    killEcoli(aliveCount, 40);
+
+    if (correctCombo) {
+        setTimeout(() => {
+            revealVaccineName();
+        }, 1500);
     }
+}
     else {
         killEcoli(Math.floor(aliveCount * 0.35), 60);// partial wipe
     }
