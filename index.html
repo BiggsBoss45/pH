@@ -319,43 +319,97 @@ function revealVaccineName() {
 
 function checkPH() {
 
-    initEcoli();
-
     let ph = 7;
 
     const acid = parseInt(document.getElementById("acid").value);
     const base = parseInt(document.getElementById("base").value);
     const stab = parseInt(document.getElementById("stabilizer").value);
 
-    const correctCombo = (acid === 3 && base === 2 && stab === 1);
+    const correctCombo =
+        acid === 3 &&
+        base === 2 &&
+        stab === 1;
 
-    switch(acid){ case 1: ph -= 1.5; break; case 2: ph -= 2.8; break; case 3: ph -= 2.0; break; }
-    switch(base){ case 1: ph += 2.5; break; case 2: ph += 0.3; break; case 3: ph += 1.2; break; }
-    switch(stab){ case 1: ph = 7 + (ph-7)*0.7; break; case 2: ph = 7 + (ph-7)*0.45; break; case 3: ph = 7 + (ph-7)*0.6; break; }
+    switch(acid){
+        case 1: ph -= 1.5; break;
+        case 2: ph -= 2.8; break;
+        case 3: ph -= 2.0; break;
+    }
+
+    switch(base){
+        case 1: ph += 2.5; break;
+        case 2: ph += 0.3; break;
+        case 3: ph += 1.2; break;
+    }
+
+    switch(stab){
+        case 1: ph = 7 + (ph - 7) * 0.7; break;
+        case 2: ph = 7 + (ph - 7) * 0.45; break;
+        case 3: ph = 7 + (ph - 7) * 0.6; break;
+    }
 
     ph = Math.max(0, Math.min(14, ph));
 
     attempt++;
 
     const inTarget = (ph >= 5 && ph <= 6);
+
     let aliveCount = ecoli.filter(e => e.alive).length;
 
     const result = document.getElementById("result");
 
+    result.innerHTML = "";
+
+    // WRONG RANGE
     if (!inTarget) {
+
         killTemporary(Math.floor(aliveCount * 0.35), 160);
-        result.innerHTML = `ENTRY #${attempt}<br><br>UNSTABLE`;
+
+        result.innerHTML =
+        `ENTRY #${attempt}<br><br>
+        pH: <b>${ph.toFixed(2)}</b><br>
+        STATUS: <b>UNSTABLE</b>`;
+
         return;
     }
 
-    if (correctCombo) {
-        killPermanent(aliveCount, 40);
-        result.innerHTML = `ENTRY #${attempt}<br><br>PERFECT MATCH`;
-        setTimeout(revealVaccineName, 1200);
-    } else {
+    // RIGHT RANGE BUT WRONG COMBO
+    if (inTarget && !correctCombo) {
+
         killTemporary(aliveCount, 120);
-        result.innerHTML = `ENTRY #${attempt}<br><br>STABLE BUT INCORRECT`;
+
+        result.innerHTML =
+        `ENTRY #${attempt}<br><br>
+        pH: <b>${ph.toFixed(2)}</b><br>
+        STATUS: <b>STABLE BUT INCORRECT</b>`;
+
+        return;
     }
+
+    // PERFECT COMBO
+    killPermanent(aliveCount, 40);
+
+    result.innerHTML =
+    `ENTRY #${attempt}<br><br>
+    pH: <b>${ph.toFixed(2)}</b><br>
+    STATUS: <b>PERFECT MATCH</b><br><br>
+
+    <button onclick="generateVaccine()">
+        GENERATE VACCINE
+    </button>`;
+}
+
+function generateVaccine() {
+
+    const result = document.getElementById("result");
+
+    result.innerHTML += `
+        <br><br>
+        <span style="color:lime; font-size:22px;">
+            FINAL VACCINE IDENTIFIED:<br><br>
+            <b>VX-ALPHA-3B1</b>
+        </span>
+    `;
 }
 </script>
 
